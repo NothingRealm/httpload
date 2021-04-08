@@ -9,7 +9,7 @@ void init_ssl() {
 }
 
 
-void create_ssl_connection(SSL *ssl, SOCKET *sock) {
+int create_ssl_connection(SSL *ssl, SOCKET *sock) {
     SSL_CTX *ctx = SSL_CTX_new(TLS_client_method());
     if (!ctx) {
         ERROR("Could not create SSL context!!!");
@@ -29,3 +29,32 @@ void create_ssl_connection(SSL *ssl, SOCKET *sock) {
     }
     return SUCCESS;
 }
+
+
+int socket_connect_to_host(char* hostname, char* port, SOCKET *sock) {
+    struct addrinfo hints;
+    struct addrinfo *peer_address;
+    int err;
+
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_socktype = SOCK_STREAM;
+    getaddrinfo(hostname, port, &hints, &peer_address);
+
+    *sock = socket(peer_address->ai_family, peer_address->ai_socktype,
+            peer_address->ai_protocol);
+    if (*sock == -1) {
+        ERROR("socket() failed!!!");
+        return ERR_SOCKET_CREATE;
+    }
+    err = connect(*sock, peer_address->ai_addr, peer_address->ai_addrlen);
+    if (err == -1) {
+        ERROR("connect() failed!!!");
+        return ERR_SOCKET_CONNECT;
+    }
+    freeaddrinfo(peer_address);
+    return SUCCESS;
+}
+
+
+
+
