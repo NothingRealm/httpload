@@ -11,7 +11,6 @@ void init_ssl() {
 
 int create_ssl_connection(SSL *ssl, SOCKET *sock) {
     SSL_CTX *ctx;
-    SSL *ssl;
 
     ctx = SSL_CTX_new(TLS_client_method());
     if (!ctx) {
