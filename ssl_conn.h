@@ -10,4 +10,8 @@
 
 #include <openssl/ssl.h>
 
+
+void init_ssl();
+int create_ssl_connection(SSL *ssl, SOCKET *sock);
+
 #endif
