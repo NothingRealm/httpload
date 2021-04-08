@@ -10,13 +10,16 @@ void init_ssl() {
 
 
 int create_ssl_connection(SSL *ssl, SOCKET *sock) {
-    SSL_CTX *ctx = SSL_CTX_new(TLS_client_method());
+    SSL_CTX *ctx;
+    SSL *ssl;
+
+    ctx = SSL_CTX_new(TLS_client_method());
     if (!ctx) {
         ERROR("Could not create SSL context!!!");
         return ERR_SSL_CTX;
     }
 
-    SSL *ssl = SSL_new(ctx);
+    ssl = SSL_new(ctx);
     if (!ssl) {
         ERROR("Could not SSL!!!");
         return ERR_SSL;
@@ -46,8 +49,7 @@ int socket_connect_to_host(char* hostname, char* port, SOCKET *sock) {
         ERROR("socket() failed!!!");
         return ERR_SOCKET_CREATE;
     }
-    err = connect(*sock, peer_address->ai_addr, peer_address->ai_addrlen);
-    if (err == -1) {
+    if (connect(*sock, peer_address->ai_addr, peer_address->ai_addrlen)) {
         ERROR("connect() failed!!!");
         return ERR_SOCKET_CONNECT;
     }
