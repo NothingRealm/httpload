@@ -34,16 +34,21 @@ int create_ssl_connection(SSL *ssl, SOCKET *sock) {
 
 
 int socket_connect_to_host(struct sockaddr_in* peer_address, SOCKET *sock) {
+    int err;
     *sock = socket(AF_INET, SOCK_STREAM, 0);
     if (*sock == -1) {
         ERROR("socket() failed!!!");
         return ERR_SOCKET_CREATE;
     }
-    if (connect(*sock, (struct sockaddr*)peer_address, sizeof(*peer_address))) {
+
+    err = connect(*sock, (struct sockaddr*)peer_address, sizeof(*peer_address));
+    printf("%d\n", err);
+
+    if (err == -1) {
         ERROR("connect() failed!!!");
         return ERR_SOCKET_CONNECT;
     }
-    return SUCCESS;
+    return set_nonblocking(*sock);
 }
 
 
@@ -51,19 +56,33 @@ int domain_lookup(char* hostname, char* port, struct sockaddr_in* addr_in) {
     int err;
     struct addrinfo hints, *peer_address;
     
-    memset(&hints, 0, sizeof(struct addrinfo));
+    memset(&hints, 0, sizeof(hints));
     hints.ai_socktype = SOCK_STREAM;
 
     err = getaddrinfo(hostname, port, &hints, &peer_address);
 
-    if (!err)
-        return err;
+    if (err != 0) {
+        ERROR("Could not resolve domain");
+        return ERR_LOOKUP;
+    }
 
-    addr_in = (struct sockaddr_in*) peer_address->ai_addr;
-
-    printf("%s:%d\n", inet_ntoa(addr_in->sin_addr), ntohs(addr_in->sin_port));
-
-    freeaddrinfo(peer_address);
+    *addr_in = *(struct sockaddr_in*) peer_address->ai_addr;
 
     return SUCCESS;
+}
+
+int set_nonblocking(int fd) {
+	int options;
+    options = fcntl(fd, F_GETFL);
+	if (options < 0) {
+        ERROR("Get flags failed");
+		return ERR_GET_FLAG;
+	}
+	options = options | O_NONBLOCK;
+	if (fcntl(fd, F_SETFL, options) < 0) {
+		ERROR("Set flags failed");
+		return ERR_SET_FLAG;
+	}
+	return SUCCESS;
+
 }
