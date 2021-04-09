@@ -15,9 +15,12 @@
 #include <sys/socket.h>
 #include <string.h>
 #include <netdb.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 void init_ssl();
 int create_ssl_connection(SSL *ssl, SOCKET *sock);
-int socket_connect_to_host(char* hostname, char* port, SOCKET *sock);
+int socket_connect_to_host(struct sockaddr_in* peer_address, SOCKET *sock);
+int domain_lookup(char* host_name, char* port, struct sockaddr_in* addr_in);
 
 #endif
