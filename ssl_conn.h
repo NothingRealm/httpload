@@ -9,6 +9,9 @@
 #define ERR_SSL_CONN -3
 #define ERR_SOCKET_CREATE -4
 #define ERR_SOCKET_CONNECT -5
+#define ERR_LOOKUP -6
+#define ERR_GET_FLAG -9
+#define ERR_SET_FLAG -10
 
 #include <openssl/ssl.h>
 #include <sys/types.h>
@@ -17,6 +20,7 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <fcntl.h>
 
 void init_ssl();
 int create_ssl_connection(SSL *ssl, SOCKET *sock);
