@@ -14,6 +14,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <string.h>
+#include <netdb.h>
 
 void init_ssl();
 int create_ssl_connection(SSL *ssl, SOCKET *sock);

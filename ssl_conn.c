@@ -4,7 +4,7 @@
 
 void init_ssl() {
     SSL_library_init();
-    OpenSSL_add_all_algorithm();
+    OpenSSL_add_all_algorithms();
     SSL_load_error_strings();
 }
 
@@ -24,7 +24,7 @@ int create_ssl_connection(SSL *ssl, SOCKET *sock) {
         return ERR_SSL;
     }
 
-    SSL_set_fd(ssl, sock);
+    SSL_set_fd(ssl, *sock);
     if (SSL_connect(ssl) == -1) {
         ERROR("Could not make SSL Connection!!!");
         return ERR_SSL_CONN;
@@ -36,9 +36,8 @@ int create_ssl_connection(SSL *ssl, SOCKET *sock) {
 int socket_connect_to_host(char* hostname, char* port, SOCKET *sock) {
     struct addrinfo hints;
     struct addrinfo *peer_address;
-    int err;
 
-    memset(&hints, 0, sizeof(hints));
+    memset(&hints, 0, sizeof(struct addrinfo));
     hints.ai_socktype = SOCK_STREAM;
     getaddrinfo(hostname, port, &hints, &peer_address);
 
@@ -55,7 +54,4 @@ int socket_connect_to_host(char* hostname, char* port, SOCKET *sock) {
     freeaddrinfo(peer_address);
     return SUCCESS;
 }
-
-
-
 
