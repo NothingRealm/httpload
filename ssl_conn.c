@@ -9,6 +9,22 @@ void init_ssl() {
 }
 
 
+int set_nonblocking(int fd) {
+	int options;
+    options = fcntl(fd, F_GETFL);
+	if (options < 0) {
+        ERROR("Get flags failed");
+		return ERR_GET_FLAG;
+	}
+	options = options | O_NONBLOCK;
+	if (fcntl(fd, F_SETFL, options) < 0) {
+		ERROR("Set flags failed");
+		return ERR_SET_FLAG;
+	}
+	return SUCCESS;
+}
+
+
 SSL* create_ssl_connection(SOCKET *sock) {
     SSL_CTX *ctx;
     SSL *ssl;
@@ -73,17 +89,3 @@ int domain_lookup(char* hostname, char* port, struct sockaddr_in* addr_in) {
     return SUCCESS;
 }
 
-int set_nonblocking(int fd) {
-	int options;
-    options = fcntl(fd, F_GETFL);
-	if (options < 0) {
-        ERROR("Get flags failed");
-		return ERR_GET_FLAG;
-	}
-	options = options | O_NONBLOCK;
-	if (fcntl(fd, F_SETFL, options) < 0) {
-		ERROR("Set flags failed");
-		return ERR_SET_FLAG;
-	}
-	return SUCCESS;
-}
