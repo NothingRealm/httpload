@@ -5,7 +5,7 @@
 #include "ssl_conn.h"
 #include <sys/epoll.h>
 
-#define READ_EVENT (EPOLLIN | EPOLLRDHUP)
+#define READ_EVENT EPOLLIN
 #define WRITE_EVENT EPOLLOUT
 #define CLEAR_EVENT EPOLLET
 
