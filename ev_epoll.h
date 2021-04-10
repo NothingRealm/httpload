@@ -11,6 +11,7 @@
 
 #define ERR_EPOLL_CREATE -7
 #define ERR_EPOLL_WAIT -8
+#define ERR_EPOLL_CTL -9
 
 int add_new_connection(SSL *ssl, int epollfd);
 int wait_for_event(int epollfd);
