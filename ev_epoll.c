@@ -7,6 +7,7 @@ int ev_init(int* epollfd) {
         ERROR("epoll_create1() failed");
         return ERR_EPOLL_CREATE;
     }
+    return SUCCESS;
 }
 
 
@@ -29,7 +30,7 @@ int ev_wait(int epollfd, struct epoll_event *events) {
 int loop() {
     int err, epollfd, nfds, n, bytes_recieved, count;
     struct sockaddr_in peer_address;
-    struct epoll_event ev, events[MAX_EVENTS];
+    struct epoll_event events[MAX_EVENTS];
     char buffer[BUFFER_SIZE];
     char* host = "google.com";
     char* port = "443";
@@ -52,7 +53,7 @@ int loop() {
     if (err < 0)
         exit(err);
 
-    err = ev_add(epollfd, &ssl, sock);
+    err = ev_add(epollfd, ssl, sock);
     if (err < 0)
         exit(err);
 
