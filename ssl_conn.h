@@ -23,7 +23,7 @@
 #include <fcntl.h>
 
 void init_ssl();
-int create_ssl_connection(SSL *ssl, SOCKET *sock);
+SSL* create_ssl_connection(SOCKET *sock);
 int socket_connect_to_host(struct sockaddr_in* peer_address, SOCKET *sock);
 int domain_lookup(char* host_name, char* port, struct sockaddr_in* addr_in);
 
