@@ -1,5 +1,39 @@
 #include "ev_poll.h"
 
+int ev_init(struct pollfd_ssl* pfds) {
+    int n;
+    for (n = 0; n < MAX_EVENTS; n++) {
+       pfds[n].pfd.fd = -1;
+       pfds[n].pfd.events = WRITE_EVENT | READ_EVENT;
+    }
+    return SUCCESS;
+}
+
+
+int ev_add(struct pollfd_ssl* pfds, SSL* ssl, int sock) {
+    int err, n;
+    for (n = 0; n < MAX_EVENTS; n++) {
+        if (pfds[n].pfd.fd = -1){
+            pfds[n].pfd.events = WRITE_EVENT | READ_EVENT;
+            pfds[n].pfd.fd = sock;
+            pfds[n].ssl = ssl;
+            return SUCCESS;
+        }
+    }
+    return ERR_POLL_ADD;
+}
+
+
+int ev_wait(struct pollfd_ssl* pfds) {
+    return poll((struct pollfd*)pfds, MAX_EVENTS, -1);
+}
+
+
+int ev_del(struct pollfd_ssl* pfds, int index) {
+    pfds[index].pfd.fd = -1;
+}
+
+
 int loop() {
     int err, nfds, n, bytes_recieved, count;
     struct sockaddr_in peer_address;
@@ -24,14 +58,15 @@ int loop() {
 
     for (n = 0; n < MAX_EVENTS; n++) {
        pfds[n].pfd.fd = -1;
-       pfds[n].pfd.events = WRITE_EVENT | READ_EVENT;
+       pfds[n].pfd.events = WRITE_EVENT | READ_EVENT | POLLHUP;
     }
 
-    pfds[0].pfd.fd = sock;
-    pfds[0].ssl = ssl;
+    err = ev_add(pfds, ssl, sock);
+    if (err < 0)
+        exit(err);
 
     while (1) {
-        nfds = poll((struct pollfd*)pfds, MAX_EVENTS, -1);
+        nfds = ev_wait(pfds);
         if (nfds == -1) {
             ERROR("epoll_wait() failed");
             exit(ERR_POLL_WAIT);
@@ -41,15 +76,16 @@ int loop() {
                 count = sprintf(buffer, "Hello There\n");
                 SSL_write(ssl, "hello", strlen(buffer));
                 printf("writing\n");
-            }
-            if (pfds[n].pfd.revents & READ_EVENT) {
+            } else if (pfds[n].pfd.revents & READ_EVENT) {
                 bytes_recieved = SSL_read(ssl, buffer,
                         BUFFER_SIZE);
                 if (bytes_recieved < 0)
                     continue;
                 printf("Read: %s\n", buffer);
+            } else if (pfds[n].pfd.revents & POLLHUP) {
+                ev_del(pfds, n);
+                printf("deleting");
             }
         }
     }
-
 }
