@@ -3,20 +3,21 @@
 int ev_init(struct pollfd_ssl* pfds) {
     int n;
     for (n = 0; n < MAX_EVENTS; n++) {
-       pfds[n].pfd.fd = -1;
-       pfds[n].pfd.events = WRITE_EVENT | READ_EVENT;
+        pfds[n].pfd.fd = -1;
+        pfds[n].pfd.events = WRITE_EVENT | READ_EVENT;
     }
     return SUCCESS;
 }
 
 
 int ev_add(struct pollfd_ssl* pfds, SSL* ssl, int sock) {
-    int err, n;
+    int n;
     for (n = 0; n < MAX_EVENTS; n++) {
-        if (pfds[n].pfd.fd = -1){
+        if (pfds[n].pfd.fd = -1) {
             pfds[n].pfd.events = WRITE_EVENT | READ_EVENT;
             pfds[n].pfd.fd = sock;
             pfds[n].ssl = ssl;
+            printf("%x = %x\n",ssl, pfds[n].ssl);
             return SUCCESS;
         }
     }
@@ -31,6 +32,7 @@ int ev_wait(struct pollfd_ssl* pfds) {
 
 int ev_del(struct pollfd_ssl* pfds, int index) {
     pfds[index].pfd.fd = -1;
+    return SUCCESS;
 }
 
 
@@ -56,10 +58,8 @@ int loop() {
     if (err < 0)
         exit(err);
 
-    for (n = 0; n < MAX_EVENTS; n++) {
-       pfds[n].pfd.fd = -1;
-       pfds[n].pfd.events = WRITE_EVENT | READ_EVENT | POLLHUP;
-    }
+    ev_init(pfds);
+
 
     err = ev_add(pfds, ssl, sock);
     if (err < 0)
@@ -74,10 +74,13 @@ int loop() {
         for (n = 0; n < MAX_EVENTS; n++) {
             if (pfds[n].pfd.revents & WRITE_EVENT) {
                 count = sprintf(buffer, "Hello There\n");
-                SSL_write(ssl, "hello", strlen(buffer));
+                printf("%x\n", pfds[n].ssl);
+                printf("%s\n", SSL_get_cipher(ssl));
+                printf("%s\n", SSL_get_cipher(pfds[n].ssl));
+                SSL_write(pfds[n].ssl, "hello", 5);
                 printf("writing\n");
             } else if (pfds[n].pfd.revents & READ_EVENT) {
-                bytes_recieved = SSL_read(ssl, buffer,
+                bytes_recieved = SSL_read(pfds[n].ssl, buffer,
                         BUFFER_SIZE);
                 if (bytes_recieved < 0)
                     continue;
